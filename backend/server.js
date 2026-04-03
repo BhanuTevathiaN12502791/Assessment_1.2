@@ -4,6 +4,7 @@ const dotenv = require('dotenv');
 const cors = require('cors');
 const connectDB = require('./config/db');
 const planRoutes = require("./routes/planRoutes");
+const subscriptionRoutes = require("./routes/subscriptionRoutes");
 
 dotenv.config();
 
@@ -14,6 +15,7 @@ app.use(cors());
 app.use(express.json());
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use("/api/plans", planRoutes);
+app.use("/api/subscriptions", subscriptionRoutes);
 //app.use('/api/tasks', require('./routes/taskRoutes'));
 
 // Export the app object for testing
