@@ -11,19 +11,27 @@ const protect = async (req, res, next) => {
     try {
       token = req.headers.authorization.split(" ")[1];
 
+      // ✅ USE ENV SECRET (FINAL FIX)
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-      req.user = await User.findById(decoded.id).select("-password");
+      console.log("DECODED:", decoded);
+
+      const user = await User.findById(decoded.id).select("-password");
+
+      if (!user) {
+        return res.status(401).json({ message: "User not found" });
+      }
+
+      req.user = user;
 
       return next();
     } catch (error) {
-      return res.status(401).json({ message: "Not authorized" });
+      console.error("TOKEN ERROR:", error.message);
+      return res.status(401).json({ message: "Token failed" });
     }
   }
 
-  if (!token) {
-    return res.status(401).json({ message: "No token" });
-  }
+  return res.status(401).json({ message: "No token" });
 };
 
 module.exports = protect;

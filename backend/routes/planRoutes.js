@@ -1,6 +1,9 @@
 const express = require("express");
 const router = express.Router();
 
+const protect = require("../middleware/authMiddleware");
+const adminOnly = require("../middleware/adminMiddleware");
+
 const {
   createPlan,
   getPlans,
@@ -8,10 +11,12 @@ const {
   deletePlan,
 } = require("../controllers/planController");
 
-// routes
-router.post("/", createPlan);
+// Public
 router.get("/", getPlans);
-router.put("/:id", updatePlan);
-router.delete("/:id", deletePlan);
+
+// Admin only
+router.post("/", protect, adminOnly, createPlan);
+router.put("/:id", protect, adminOnly, updatePlan);
+router.delete("/:id", protect, adminOnly, deletePlan);
 
 module.exports = router;

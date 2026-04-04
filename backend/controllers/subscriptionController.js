@@ -1,52 +1,89 @@
 const Subscription = require("../models/Subscription");
+const Plan = require("../models/Plan");
 
 // CREATE SUBSCRIPTION
 exports.createSubscription = async (req, res) => {
   try {
+    if (!req.user) {
+      return res.status(401).json({ message: "Unauthorized: user missing" });
+    }
+
+    const { plan } = req.body;
+
+    if (!plan) {
+      return res.status(400).json({ message: "Plan id is required" });
+    }
+
+    const existingPlan = await Plan.findById(plan);
+    if (!existingPlan) {
+      return res.status(404).json({ message: "Selected plan not found" });
+    }
+
     const subscription = await Subscription.create({
-      user: req.user.id,
-      plan: req.body.plan,
+      user: req.user._id,
+      plan,
+      status: "active",
     });
 
-    res.status(201).json(subscription);
+    const populated = await Subscription.findById(subscription._id).populate("plan");
+
+    return res.status(201).json(populated);
   } catch (error) {
-    res.status(500).json({ message: "Error creating subscription" });
+    console.error("CREATE SUBSCRIPTION ERROR:", error);
+    return res.status(500).json({ message: error.message });
   }
 };
 
 // GET MY SUBSCRIPTIONS
 exports.getMySubscriptions = async (req, res) => {
   try {
-    const subs = await Subscription.find({ user: req.user.id })
-      .populate("plan");
+    if (!req.user) {
+      return res.status(401).json({ message: "Unauthorized: user missing" });
+    }
 
-    res.json(subs);
+    const subs = await Subscription.find({ user: req.user._id }).populate("plan");
+    return res.status(200).json(subs);
   } catch (error) {
-    res.status(500).json({ message: "Error fetching subscriptions" });
+    console.error("GET SUBSCRIPTIONS ERROR:", error);
+    return res.status(500).json({ message: error.message });
   }
 };
 
-// UPDATE (optional)
+// UPDATE SUBSCRIPTION
 exports.updateSubscription = async (req, res) => {
   try {
-    const sub = await Subscription.findByIdAndUpdate(
-      req.params.id,
+    const updated = await Subscription.findOneAndUpdate(
+      { _id: req.params.id, user: req.user._id },
       req.body,
-      { new: true }
-    );
+      { new: true, runValidators: true }
+    ).populate("plan");
 
-    res.json(sub);
+    if (!updated) {
+      return res.status(404).json({ message: "Subscription not found" });
+    }
+
+    return res.status(200).json(updated);
   } catch (error) {
-    res.status(500).json({ message: "Error updating subscription" });
+    console.error("UPDATE SUBSCRIPTION ERROR:", error);
+    return res.status(500).json({ message: error.message });
   }
 };
 
-// DELETE / CANCEL
+// DELETE SUBSCRIPTION
 exports.deleteSubscription = async (req, res) => {
   try {
-    await Subscription.findByIdAndDelete(req.params.id);
-    res.json({ message: "Subscription removed" });
+    const deleted = await Subscription.findOneAndDelete({
+      _id: req.params.id,
+      user: req.user._id,
+    });
+
+    if (!deleted) {
+      return res.status(404).json({ message: "Subscription not found" });
+    }
+
+    return res.status(200).json({ message: "Subscription removed" });
   } catch (error) {
-    res.status(500).json({ message: "Error deleting subscription" });
+    console.error("DELETE SUBSCRIPTION ERROR:", error);
+    return res.status(500).json({ message: error.message });
   }
 };
