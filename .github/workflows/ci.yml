@@ -41,14 +41,9 @@ jobs:
         run: |
           cd frontend
           rm -rf node_modules package-lock.json
-          npm install
-
-      - name: Fix permissions (Linux only)
-        run: |
-          cd frontend
-          chmod -R 755 node_modules/.bin
+          npm ci
 
       - name: Build frontend
         run: |
           cd frontend
-          npx react-scripts build
+          npm run build
