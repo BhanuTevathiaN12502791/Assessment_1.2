@@ -1,55 +1,63 @@
-name: CI/CD Pipeline
+name: Backend CI
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
 
 jobs:
-  build:
+  test:
+    name: Run Tests & Build
     runs-on: ubuntu-latest
 
+    strategy:
+      matrix:
+        node-version: [18]
+
     steps:
-      - name: Checkout code
+      - name: Checkout Code
         uses: actions/checkout@v3
 
-     
-      # NODE SETUP
-      
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version: ${{ matrix.node-version }}
           cache: 'npm'
 
-     
-      # BACKEND
-      
-      - name: Install backend dependencies
+      - name: Print Env Secret
+        env:
+          MONGO_URI: ${{ secrets.MONGO_URI }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          PORT: ${{ secrets.PORT }}
+        run: |
+          echo "Mongo URI Loaded"
+          echo "JWT Secret Loaded"
+          echo "Port Loaded"
+
+      - name: Install Backend Dependencies
+        working-directory: ./backend
+        run: npm install
+
+      - name: Run Backend Tests
+        env:
+          MONGO_URI: ${{ secrets.MONGO_URI }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          PORT: ${{ secrets.PORT }}
+        working-directory: ./backend
+        run: npm test || echo "No tests found"
+
+      - name: Install Frontend Dependencies
+        working-directory: ./frontend
+        run: npm ci
+
+      - name: Build Frontend
+        working-directory: ./frontend
+        run: npm run build
+
+      - name: Create .env file
         run: |
           cd backend
-          npm ci
+          echo "${{ secrets.PROD }}" > .env
 
-      - name: Run backend tests
-        run: |
-          cd backend
-          npm test || echo "No tests found"
-
-   
-      # FRONTEND
-
-      # FRONTEND FIX
-      - name: Install frontend dependencies
-        run: |
-          cd frontend
-          rm -rf node_modules package-lock.json
-          npm install
-
-      - name: Fix permissions (Linux only)
-        run: |
-          cd frontend
-          chmod -R 755 node_modules/.bin
-
-      - name: Build frontend
-        run: |
-          cd frontend
-          npx react-scripts build
+      - name: Install Root Dependencies
+        run: npm ci || echo "No root package.json"
