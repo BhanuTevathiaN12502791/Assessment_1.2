@@ -12,16 +12,9 @@ const Login = () => {
     e.preventDefault();
 
     try {
-      const response = await axiosInstance.post(
-        "/api/auth/login",
-        formData
-      );
-
-      // 🔥 CRITICAL FIX
-      localStorage.setItem("token", response.data.token);
+      const response = await axiosInstance.post("/api/auth/login", formData);
 
       login(response.data);
-
       navigate("/tasks");
     } catch (error) {
       console.error("LOGIN ERROR:", error.response?.data || error.message);
@@ -35,9 +28,7 @@ const Login = () => {
         onSubmit={handleSubmit}
         className="bg-white p-6 shadow-md rounded"
       >
-        <h1 className="text-2xl font-bold mb-4 text-center">
-          Login
-        </h1>
+        <h1 className="text-2xl font-bold mb-4 text-center">Login</h1>
 
         <input
           type="email"

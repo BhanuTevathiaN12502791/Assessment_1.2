@@ -47,17 +47,20 @@ const loginUser = async (req, res) => {
     const user = await User.findOne({ email });
 
     if (user && (await bcrypt.compare(password, user.password))) {
+      console.log("LOGIN USER:", user); // 🔥 DEBUG
+
       res.json({
         id: user._id,
         name: user.name,
         email: user.email,
+        role: user.role || "user", // ✅ FORCE SAFE ROLE
         token: generateToken(user._id),
       });
     } else {
-      res.status(401).json({ message: "Invalid email or password" });
+      res.status(401).json({ message: "Invalid credentials" });
     }
   } catch (error) {
-    console.error("LOGIN ERROR:", error);
+    console.error(error);
     res.status(500).json({ message: error.message });
   }
 };
@@ -109,8 +112,7 @@ const updateUserProfile = async (req, res) => {
       id: updatedUser._id,
       name: updatedUser.name,
       email: updatedUser.email,
-      university: updatedUser.university,
-      address: updatedUser.address,
+      role: user.role,
       token: generateToken(updatedUser._id),
     });
   } catch (error) {
