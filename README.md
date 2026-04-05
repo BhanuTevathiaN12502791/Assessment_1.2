@@ -45,3 +45,30 @@ It supports:
 cd backend
 npm install
 npm start
+```
+
+### Frontend
+```bash
+cd frontend
+npm install
+npm start
+```
+
+### Environment Variables (.env)
+```bash
+MONGO_URI=mongodb+srv://ifn636user:CHuWkAU4FWIRzgQs@ifn636.lqbz5wa.mongodb.net/ifn636_db
+JWT_SECRET=mysecret123
+PORT=5001
+```
+
+### Demo Credentials
+admin-
+email - admin123@gmail.com
+password- admin123
+
+user-
+email - jack123@gmail.com
+password - jack123
+
+### Github Repo
+https://github.com/BhanuTevathiaN12502791/Assessment_1.2
