@@ -37,13 +37,19 @@ jobs:
    
       # FRONTEND
 
+      # FRONTEND FIX
       - name: Install frontend dependencies
         run: |
           cd frontend
           rm -rf node_modules package-lock.json
-          npm ci
+          npm install
+
+      - name: Fix permissions (Linux only)
+        run: |
+          cd frontend
+          chmod -R 755 node_modules/.bin
 
       - name: Build frontend
         run: |
           cd frontend
-          npm run build
+          npx react-scripts build
