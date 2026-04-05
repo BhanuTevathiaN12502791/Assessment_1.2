@@ -44,7 +44,10 @@ const AdminDashboard = () => {
 
       fetchPlans();
     } catch (error) {
-      console.error("ADMIN CREATE PLAN ERROR:", error.response?.data || error.message);
+      console.error(
+        "ADMIN CREATE PLAN ERROR:",
+        error.response?.data || error.message
+      );
       alert("Failed to create plan");
     }
   };
@@ -54,7 +57,10 @@ const AdminDashboard = () => {
       await axiosInstance.delete(`/api/plans/${id}`);
       fetchPlans();
     } catch (error) {
-      console.error("ADMIN DELETE PLAN ERROR:", error.response?.data || error.message);
+      console.error(
+        "ADMIN DELETE PLAN ERROR:",
+        error.response?.data || error.message
+      );
       alert("Failed to delete plan");
     }
   };
@@ -64,78 +70,111 @@ const AdminDashboard = () => {
   }, []);
 
   return (
-    <div className="max-w-2xl mx-auto mt-10">
-      <h1 className="text-2xl font-bold mb-6 text-center">Admin Dashboard</h1>
+    <div className="space-y-8">
 
-      <div className="mb-6 p-4 border rounded shadow">
-        <h2 className="text-lg font-semibold mb-3">Create Plan</h2>
+      {/* HEADER */}
+      <div>
+        <h1 className="text-3xl font-bold text-gray-900">
+          Admin Dashboard
+        </h1>
+        <p className="text-gray-500 mt-1">
+          Create and manage subscription plans
+        </p>
+      </div>
 
-        <input
-          type="text"
-          placeholder="Plan name"
-          value={form.name}
-          onChange={(e) => setForm({ ...form, name: e.target.value })}
-          className="w-full p-2 border rounded mb-2"
-        />
+      {/* CREATE PLAN */}
+      <div className="bg-white rounded-2xl shadow-md p-6 space-y-4">
+        <h2 className="text-xl font-semibold text-gray-900">
+          Create New Plan
+        </h2>
 
-        <input
-          type="number"
-          placeholder="Price"
-          value={form.price}
-          onChange={(e) => setForm({ ...form, price: e.target.value })}
-          className="w-full p-2 border rounded mb-2"
-        />
+        <div className="grid md:grid-cols-2 gap-4">
 
-        <select
-          value={form.duration}
-          onChange={(e) => setForm({ ...form, duration: e.target.value })}
-          className="w-full p-2 border rounded mb-2"
-        >
-          <option value="monthly">Monthly</option>
-          <option value="yearly">Yearly</option>
-        </select>
+          <input
+            type="text"
+            placeholder="Plan name"
+            value={form.name}
+            onChange={(e) => setForm({ ...form, name: e.target.value })}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
+          />
 
-        <input
-          type="text"
-          placeholder="Features (comma separated)"
-          value={form.features}
-          onChange={(e) => setForm({ ...form, features: e.target.value })}
-          className="w-full p-2 border rounded mb-2"
-        />
+          <input
+            type="number"
+            placeholder="Price"
+            value={form.price}
+            onChange={(e) => setForm({ ...form, price: e.target.value })}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
+          />
+
+          <select
+            value={form.duration}
+            onChange={(e) =>
+              setForm({ ...form, duration: e.target.value })
+            }
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
+          >
+            <option value="monthly">Monthly</option>
+            <option value="yearly">Yearly</option>
+          </select>
+
+          <input
+            type="text"
+            placeholder="Features (comma separated)"
+            value={form.features}
+            onChange={(e) =>
+              setForm({ ...form, features: e.target.value })
+            }
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
+          />
+        </div>
 
         <button
           onClick={handleCreate}
-          className="w-full bg-blue-600 text-white p-2 rounded"
+          className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg font-medium transition"
         >
           Create Plan
         </button>
       </div>
 
+      {/* PLANS LIST */}
       <div>
-        <h2 className="text-lg font-semibold mb-3">Existing Plans</h2>
+        <h2 className="text-xl font-semibold text-gray-900 mb-4">
+          Existing Plans
+        </h2>
 
-        {plans.map((plan) => (
-          <div key={plan._id} className="border p-4 mb-3 rounded shadow">
-            <p>
-              <strong>{plan.name}</strong> - ${plan.price} ({plan.duration})
-            </p>
-
-            {plan.features?.length > 0 && (
-              <ul className="list-disc ml-5 mt-2">
-                {plan.features.map((feature, index) => (
-                  <li key={index}>{feature}</li>
-                ))}
-              </ul>
-            )}
-
-            <button
-              onClick={() => handleDelete(plan._id)}
-              className="bg-red-500 text-white px-3 py-1 mt-3 rounded"
+        <div className="grid md:grid-cols-2 gap-6">
+          {plans.map((plan) => (
+            <div
+              key={plan._id}
+              className="bg-white rounded-2xl shadow-md p-6 flex flex-col justify-between"
             >
-              Delete
-            </button>
-          </div>
-        ))}
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">
+                  {plan.name}
+                </h3>
+
+                <p className="text-gray-500 text-sm mt-1">
+                  ${plan.price} / {plan.duration}
+                </p>
+
+                {plan.features?.length > 0 && (
+                  <ul className="mt-3 space-y-1 text-sm text-gray-600">
+                    {plan.features.map((feature, index) => (
+                      <li key={index}>• {feature}</li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+
+              <button
+                onClick={() => handleDelete(plan._id)}
+                className="mt-4 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition"
+              >
+                Delete
+              </button>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

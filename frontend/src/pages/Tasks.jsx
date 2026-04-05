@@ -12,10 +12,8 @@ const Tasks = () => {
     try {
       setLoadingPlans(true);
       const res = await axiosInstance.get("/api/plans");
-      console.log("PLANS RESPONSE:", res.data);
       setPlans(Array.isArray(res.data) ? res.data : []);
     } catch (error) {
-      console.error("FETCH PLANS ERROR:", error.response?.data || error.message);
       alert("Failed to load plans");
     } finally {
       setLoadingPlans(false);
@@ -26,10 +24,8 @@ const Tasks = () => {
     try {
       setLoadingSubs(true);
       const res = await axiosInstance.get("/api/subscriptions");
-      console.log("SUBSCRIPTIONS RESPONSE:", res.data);
       setSubscriptions(Array.isArray(res.data) ? res.data : []);
     } catch (error) {
-      console.error("FETCH SUBSCRIPTIONS ERROR:", error.response?.data || error.message);
       alert("Failed to load subscriptions");
     } finally {
       setLoadingSubs(false);
@@ -42,15 +38,12 @@ const Tasks = () => {
     }
 
     try {
-      const res = await axiosInstance.post("/api/subscriptions", {
+      await axiosInstance.post("/api/subscriptions", {
         plan: selectedPlan,
       });
-
-      console.log("CREATE SUBSCRIPTION RESPONSE:", res.data);
       alert("Subscription successful");
       fetchSubscriptions();
     } catch (error) {
-      console.error("CREATE SUBSCRIPTION ERROR:", error.response?.data || error.message);
       alert("Subscription failed");
     }
   };
@@ -60,7 +53,6 @@ const Tasks = () => {
       await axiosInstance.delete(`/api/subscriptions/${id}`);
       fetchSubscriptions();
     } catch (error) {
-      console.error("DELETE SUBSCRIPTION ERROR:", error.response?.data || error.message);
       alert("Failed to cancel subscription");
     }
   };
@@ -71,61 +63,109 @@ const Tasks = () => {
   }, []);
 
   return (
-    <div className="max-w-2xl mx-auto mt-10">
-      <h1 className="text-2xl font-bold text-center mb-6">
-        Subscription Management
-      </h1>
+    <div className="space-y-10">
 
-      <div className="mb-6">
-        <select
-          value={selectedPlan}
-          onChange={(e) => setSelectedPlan(e.target.value)}
-          className="w-full p-2 border rounded mb-2"
-        >
-          <option value="">Select a Plan</option>
-          {plans.map((plan) => (
-            <option key={plan._id} value={plan._id}>
-              {plan.name} - ${plan.price}
-            </option>
-          ))}
-        </select>
+      {/* HEADER */}
+      <div>
+        <h1 className="text-3xl font-bold text-gray-900">
+          Subscription Management
+        </h1>
+        <p className="text-gray-500 mt-1">
+          Manage your active subscriptions and plans
+        </p>
+      </div>
 
-        {loadingPlans && <p className="mb-2">Loading plans...</p>}
+      {/* SUBSCRIBE SECTION */}
+      <div className="bg-white rounded-2xl shadow-md p-6 space-y-4 border border-gray-100">
+
+        <div>
+          <label className="text-sm text-gray-500 block mb-1">
+            Select a plan
+          </label>
+
+          <select
+            value={selectedPlan}
+            onChange={(e) => setSelectedPlan(e.target.value)}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
+          >
+            <option value="">Select a Plan</option>
+            {plans.map((plan) => (
+              <option key={plan._id} value={plan._id}>
+                {plan.name} - ${plan.price}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* STATES */}
+        {loadingPlans && (
+          <p className="text-sm text-gray-500">Loading plans...</p>
+        )}
+
         {!loadingPlans && plans.length === 0 && (
-          <p className="mb-2 text-red-600">No plans found. Create plans first.</p>
+          <p className="text-sm text-red-500">
+            No plans found. Create plans first.
+          </p>
         )}
 
         <button
           onClick={handleSubscribe}
-          className="w-full bg-green-600 text-white p-2 rounded"
+          className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg font-medium transition w-full"
         >
           Subscribe
         </button>
       </div>
 
+      {/* SUBSCRIPTIONS */}
       <div>
-        <h2 className="text-xl font-semibold mb-2">My Subscriptions</h2>
+        <h2 className="text-xl font-semibold text-gray-900 mb-4">
+          My Subscriptions
+        </h2>
 
-        {loadingSubs && <p>Loading subscriptions...</p>}
-        {!loadingSubs && subscriptions.length === 0 && <p>No subscriptions yet</p>}
+        {loadingSubs && (
+          <p className="text-gray-500">Loading subscriptions...</p>
+        )}
 
-        {subscriptions.map((sub) => (
-          <div key={sub._id} className="border p-4 mb-3 rounded shadow">
-            <p>
-              <strong>Plan:</strong> {sub.plan?.name || "Unknown plan"}
-            </p>
-            <p>
-              <strong>Status:</strong> {sub.status}
-            </p>
+        {!loadingSubs && subscriptions.length === 0 && (
+          <p className="text-gray-500 text-sm">
+            No subscriptions yet. Start by selecting a plan above.
+          </p>
+        )}
 
-            <button
-              onClick={() => handleDelete(sub._id)}
-              className="bg-red-500 text-white px-3 py-1 mt-2 rounded"
+        <div className="grid md:grid-cols-2 gap-6">
+          {subscriptions.map((sub) => (
+            <div
+              key={sub._id}
+              className="bg-white rounded-2xl shadow-md p-6 flex justify-between items-center border border-gray-100 hover:shadow-lg transition"
             >
-              Cancel
-            </button>
-          </div>
-        ))}
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">
+                  {sub.plan?.name || "Unknown plan"}
+                </h3>
+
+                <p className="text-sm text-gray-500 mt-1">
+                  Status:{" "}
+                  <span
+                    className={`capitalize font-medium ${
+                      sub.status === "active"
+                        ? "text-green-600"
+                        : "text-gray-500"
+                    }`}
+                  >
+                    {sub.status}
+                  </span>
+                </p>
+              </div>
+
+              <button
+                onClick={() => handleDelete(sub._id)}
+                className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition"
+              >
+                Cancel
+              </button>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
